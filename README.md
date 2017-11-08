@@ -2,7 +2,7 @@
 Jacob Schwartz  
 September 15, 2017  
 
-##Purpose
+## Purpose
 
 This page is the result of a project from the Developing Data Products course in the Data Science Specialization on Coursera (offered by Johns Hopkins University). The purpose of the project was to create a web page using `R Markdown` that features a map created with `Leaflet`.
 
@@ -11,7 +11,7 @@ For my version of the project, I used data from [Open Data NYC](https://opendata
 *Note: The resulting map was approached in two different ways, yeilding slightly different results. The reasons for this are explained below, however, both maps are accurate and useable.*
 
 
-##Setup
+## Setup
 
 When I looked at the hotspot location from Open Data NYC, there were many different options for ways to download the data. Initially, I simply downloaded a .csv file, since this is easily manipulatable in R. However, after some thought, I came to the conclusion that it would actually be more useful to have a dynamic JSON link instead. Unfortunately, for some reason the City does not have all of the wifi hotspot data in their JSON link yet. So a JSON map alone was missing a lot of locations. Therefore, I opted to use both the .csv and JSON methods, to cover my bases. Over time, though, I assume that the JSON method will end up being more useful.
 
@@ -25,7 +25,7 @@ library(leaflet)
 ```
 
 
-####Method 1
+#### Method 1
 
 As mentioned above, the first method I used to capture the hotspot data from Open Data NYC was downloading the .csv file, and importing it into R. The one issue with this is that it requires a file download, which can both be slow and require storage.
 
@@ -48,7 +48,7 @@ pal<-colorFactor(c("blue","darkgreen","red"),hotspots$Type)
 ```
 
 
-####Method 2
+#### Method 2
 
 The second method used, as mentioned above, was an import from a JSON link. This should theoretically be more dynamic and auto-updating. However, there is less than half the amount of data available as with the .csv file. So for now this method is a bit limited.
 
@@ -72,7 +72,7 @@ The maps for each method can be found [here](http://rpubs.com/schwarja209/NYC_ho
 Please explore and enjoy, and feel free to reach out with any feedback or suggestions!
 
 
-##Appendix
+## Appendix
 
 These maps were created on a computer with the following system running:
 
