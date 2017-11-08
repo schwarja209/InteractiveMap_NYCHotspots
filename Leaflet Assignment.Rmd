@@ -1,0 +1,101 @@
+---
+title: 'Interactive Map: NYC Hotspots'
+author: "Jacob Schwartz"
+date: "September 15, 2017"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+##Purpose
+
+This page is the result of a project from the Developing Data Products course in the Data Science Specialization on Coursera (offered by Johns Hopkins University). The purpose of the project was to create a web page using `R Markdown` that features a map created with `Leaflet`.
+
+For my version of the project, I used data from [Open Data NYC](https://opendata.cityofnewyork.us/) on public wifi hotspots throughout New York City. I felt that, in addition to being a good application of the skills from the course, this would be a useful resource to have online in map form.
+
+*Note: The resulting map was approached in two different ways, yeilding slightly different results. The reasons for this are explained below, however, both maps are accurate and useable.*
+
+
+##Setup
+
+When I looked at the hotspot location from Open Data NYC, there were many different options for ways to download the data. Initially, I simply downloaded a .csv file, since this is easily manipulatable in R. However, after some thought, I came to the conclusion that it would actually be more useful to have a dynamic JSON link instead. Unfortunately, for some reason the City does not have all of the wifi hotspot data in their JSON link yet. So a JSON map alone was missing a lot of locations. Therefore, I opted to use both the .csv and JSON methods, to cover my bases. Over time, though, I assume that the JSON method will end up being more useful.
+
+In any case, this is why, in addition to the `leaflet` library, the `jsonlite` library is included below. The `dplyr` library is also included for a bit of data frame manipulation that I needed to perform.
+
+```{r libraries, results="hide", message=FALSE, warning=FALSE}
+library(jsonlite)
+library(dplyr)
+library(leaflet)
+```
+
+
+####Method 1
+
+As mentioned above, the first method I used to capture the hotspot data from Open Data NYC was downloading the .csv file, and importing it into R. The one issue with this is that it requires a file download, which can both be slow and require storage.
+
+```{r method1, comment="", cache=TRUE}
+download.file("https://data.cityofnewyork.us/api/views/7agf-bcsq/rows.csv?accessType=DOWNLOAD","NYC_Wi-Fi_Hotspot_Locations_Map.csv")
+hotspots<-read.csv("NYC_Wi-Fi_Hotspot_Locations_Map.csv")
+hotspots<-rename(hotspots,lat=Latitude,lng=Longitude)
+```
+
+Once the data was downloaded, I used some of the additional data to create informative popups and a color scheme.
+
+```{r popups1, comment="", cache=TRUE}
+info<-paste("<b>Access Type: </b>",hotspots$Type,"<br>",
+            "<b>Provider: </b>",hotspots$Provider,"<br>",
+            "<b>Location Type: </b>",hotspots$Location_T,sep = "")
+
+pal<-colorFactor(c("blue","darkgreen","red"),hotspots$Type)
+```
+
+
+####Method 2
+
+The second method used, as mentioned above, was an import from a JSON link. This should theoretically be more dynamic and auto-updating. However, there is less than half the amount of data available as with the .csv file. So for now this method is a bit limited.
+
+```{r method2, comment="", cache=TRUE}
+hotspots2<-fromJSON("https://data.cityofnewyork.us/resource/7agf-bcsq.json", flatten = TRUE)
+hotspots2<-rename(hotspots2,lng=long_)%>%mutate(lat=as.numeric(lat),lng=as.numeric(lng))
+
+info2<-paste("<b>Access Type: </b>",hotspots2$type,"<br>",
+             "<b>Provider: </b>",hotspots2$provider,"<br>",
+             "<b>Location Type: </b>",hotspots2$location_t,sep = "")
+
+pal2<-colorFactor(c("blue","darkgreen","red"),hotspots2$type)
+```
+
+
+##Maps
+
+The maps for each method are below. Both cluster hotspot points and both are color coded based on the type of wifi access available, for somewhat easier navigation.
+
+Please explore and enjoy, and feel free to reach out with any feedback or suggestions!
+
+####Method 1
+
+```{r map1, comment="", message=FALSE, warning=FALSE, fig.width=12, fig.height=6, cache=TRUE}
+hotspots_map<-hotspots%>%leaflet()%>%addTiles()%>%
+    addCircleMarkers(clusterOptions=markerClusterOptions(),
+               popup=info,color=pal(hotspots$Type))%>%
+    addLegend(labels=c("Free - Unlimited","Free - Limited","Partner"),colors=c("blue","darkgreen","red"))
+hotspots_map
+```
+
+####Method 2
+
+```{r map2, comment="", message=FALSE, warning=FALSE, fig.width=12, fig.height=6, cache=TRUE}
+hotspots2_map<-hotspots2%>%leaflet()%>%addTiles()%>%
+    addCircleMarkers(clusterOptions=markerClusterOptions(),
+                     popup=info2,color=pal2(hotspots2$type))%>%
+    addLegend(labels=c("Free - Unlimited","Free - Limited","Partner"),colors=c("blue","darkgreen","red"))
+hotspots2_map
+```
+
+
+##Appendix
+
+These maps were created on a computer with the following system running:
+```{r appendix, echo=FALSE, comment=""}
+sessionInfo()
+```
